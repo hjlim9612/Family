@@ -341,6 +341,110 @@
   }
   .stack-seg + .stack-seg { border-left: 2px solid var(--surface); }
 
+  /* ---------------- goal meter ---------------- */
+  .goal-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .goal-pct {
+    font-size: 24px; font-weight: 700; color: var(--accent);
+    letter-spacing: -0.01em; font-variant-numeric: tabular-nums; flex: none;
+  }
+  .meter-track {
+    width: 100%; height: 14px; border-radius: 100px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--accent), var(--hyunjin));
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .meter-labels {
+    display: flex; justify-content: space-between; margin-top: 8px;
+    font-size: 12.5px; font-weight: 600; color: var(--ink-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------------- cashflow / savings rate ---------------- */
+  .savings-rate-row { margin-top: 4px; }
+  .savings-rate-label {
+    font-size: 12.5px; font-weight: 700; color: var(--ink-secondary);
+    margin: 10px 0 2px;
+  }
+
+  /* ---------------- sparkline grid ---------------- */
+  .spark-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 28px;
+  }
+  @media (max-width: 720px) {
+    .spark-grid { grid-template-columns: 1fr; }
+  }
+  .spark-col { display: flex; flex-direction: column; gap: 4px; }
+  .spark-col .spark-person {
+    font-size: 13px; font-weight: 700; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .spark-col .spark-person .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .spark-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-top: 1px solid var(--border);
+  }
+  .spark-row:first-of-type { border-top: none; }
+  .spark-row .spark-label {
+    font-size: 12.5px; font-weight: 600; color: var(--ink-secondary);
+    width: 72px; flex: none;
+  }
+  .spark-row .spark-svg-wrap { flex: 1 1 auto; min-width: 0; height: 28px; }
+  .spark-row .spark-svg-wrap svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .spark-row .spark-total {
+    font-size: 12.5px; font-weight: 700; width: 84px; flex: none; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------------- investment tables ---------------- */
+  .invest-tables {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 720px) {
+    .invest-tables { grid-template-columns: 1fr; }
+  }
+  .invest-table-wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .invest-table-wrap .invest-person {
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .invest-table-wrap .invest-person .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .invest-scroll { overflow-x: auto; }
+  table.invest-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+  }
+  table.invest-table th {
+    text-align: left; font-weight: 600; color: var(--ink-muted);
+    padding: 6px 8px; border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+  table.invest-table th.num, table.invest-table td.num { text-align: right; }
+  table.invest-table td {
+    padding: 7px 8px; border-bottom: 1px solid var(--border);
+    font-weight: 500; font-variant-numeric: tabular-nums;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+  }
+  table.invest-table tr:last-child td { border-bottom: none; }
+  .ret-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-weight: 700; padding: 2px 7px; border-radius: 100px; font-size: 11.5px;
+  }
+  .ret-chip.pos { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+  .ret-chip.neg { color: var(--debt); background: color-mix(in srgb, var(--debt) 14%, transparent); }
+  .ret-chip.zero { color: var(--ink-muted); background: var(--surface-2); }
+
   footer.page-footer {
     padding: 6px 4px 0;
     font-size: 12px;
@@ -459,6 +563,21 @@
   <section class="kpi-grid" id="kpiGrid" aria-label="핵심 지표"></section>
 
   <section class="card">
+    <div class="goal-head">
+      <div>
+        <h2>순자산 목표</h2>
+        <p class="card-sub" id="goalSub" style="margin-bottom:0;">가구 합산 순자산 기준입니다.</p>
+      </div>
+      <div class="goal-pct" id="goalPct">—%</div>
+    </div>
+    <div class="meter-track"><div class="meter-fill" id="goalFill"></div></div>
+    <div class="meter-labels">
+      <span id="goalCurrent">—</span>
+      <span id="goalTarget">목표 —</span>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>순자산 추이</h2>
     <p class="card-sub" id="netSub">개인 순자산과 가구 합산 순자산의 변화입니다. 항목을 눌러 켜고 끌 수 있어요.</p>
     <div class="legend-row" id="legendNet"></div>
@@ -489,6 +608,36 @@
     <div id="compBars" style="display:flex; flex-direction:column; gap:18px;"></div>
   </section>
 
+  <section class="card">
+    <h2>월별 수입 · 지출</h2>
+    <p class="card-sub">가구 합산 기준, 최근 12개월입니다. 이번 달은 아직 진행 중이라 제외했어요.</p>
+    <div class="legend-row" id="legendCashflow"></div>
+    <div class="chart-wrap" id="chartCashflowWrap">
+      <svg id="chartCashflow" viewBox="0 0 960 300" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltipCashflow"></div>
+    </div>
+    <div class="savings-rate-row">
+      <div class="savings-rate-label">월 저축률</div>
+      <div class="chart-wrap" id="chartSavingsWrap">
+        <svg id="chartSavings" viewBox="0 0 960 110" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltipSavings"></div>
+      </div>
+    </div>
+    <p class="footnote">저축률 = (수입 − 지출) ÷ 수입. 상여금·경조사비처럼 특정 달에 몰리는 항목이 있어 월별 편차가 커요.</p>
+  </section>
+
+  <section class="card">
+    <h2>지출 카테고리 트렌드</h2>
+    <p class="card-sub">두 분 각각 최근 12개월 지출이 가장 컸던 5개 항목입니다 (이체성 "금융", "미분류" 항목 제외).</p>
+    <div class="spark-grid" id="sparkGrid"></div>
+  </section>
+
+  <section class="card">
+    <h2>투자 종목</h2>
+    <p class="card-sub" id="investSub">최신 데이터 기준 보유 종목과 평가 수익률입니다.</p>
+    <div class="invest-tables" id="investTables"></div>
+  </section>
+
   <footer class="page-footer">
     <p><strong>업데이트 방법</strong> — 매달 뱅크샐러드 앱에서 "내 데이터 내보내기"로 두 분이 같은 날 엑셀을 내려받아 이 대화에 올려주시면, 그 값으로 이 페이지를 다시 갱신해 드려요.</p>
     <p id="dataGapNote"></p>
@@ -503,9 +652,9 @@
 //    이 블록은 build 스크립트가 자동으로 채워 넣습니다. 직접 수정하지 마세요.
 // ---------------------------------------------------------------------------
 const ENC = {
-  saltB64: "NcSuCA2SvZaxavLnG86LZQ==",
-  ivB64: "XyLlKt1Y9vIYDfch",
-  cipherB64: "9t4mg+DZhfmaD21R+4H+XEmg8dcLcgpeFpnTVS3RVqNzZg1gsc0silRXUiORs3QZrCH3HnNRsrMbrSG3KiS8q5fCn2vYgdTujHftbAMdDMafldbXj4UekCfcFlo0Rx0zUxmy/fczPpMGEbHgdM0B4IyoeT9fDqbLd8acfh8TS7m4hjT7nmFllZPDzonLm+VjINQq9w2xBdEoBquliB3/1qvqXKp4EkDVsF1fNJ9VoRbGzrlMmE8xhpKFDs4G2mhYhU2UeJrfyloBYVW0/YssWdv9ggKZu2XVdkbXw3GRXTe9RN9UKS2pW2s1OTHUoAOqvCQk1D8RyP4Q+d4c8GirqfT0HYUxy7n3hrPIhRr7gxsnm2ip+EiQa0g+h6tBUE72C/68ovS0rjEFI26mxIQAFY+6pqzRyOJxIkQZJ0yFJLVzk907KFdwfu1JPDIl0gA6tftB9RyyLdPJMB+2Z7b+QsdqYTXWbY839573oimtkpOTExKOgC5p2ldMQFI9GXCix/fBM76tZ+GvZbMxJElZ1UTB7qbdoKuuV8pXwznb+66qctTiWnm2xcBNzTI3vMqL1LB5qe7JFOMkbRvuvuLVkpyt1SMJDUxDR4lkmk5ueiVfbQ0nuITrmyQX6/IOrkeEQ2M2rdhLkehDOs0bqg194lYvPGLwPMao0HLPG2ZRV5q/ynR/9+1i6RdpIHT3L8KZszIxJHZWXUh4BV3LRVYGLMurcmb1R41fuB7hZPedF1ctNBaMofxDE3oIIBIwiGA9DWSWhUcJP2b7EdX1yjRCRPQGMFCyYy4qIjk+frXLqRojy2qM7A/ZEInWynzzEWoEpenCP/ZNpO2kKtd9WQ+RrLcIWT2XkiEwQqfZN0ZDKRb3Bt7XdLZAF7+48+esyUsVnNVQkXETsdHg65WKPu4Fxj2uIC80SYPa7qBkD07XsgrVmttYqVw+/HYTcQ2jxPhhNXasBCpBgHu+XliEp2BtIwSlnUjRBrkBw5B95DNZq0ukb+gQ4e/S3kYA+5awCpZu0A973x9yiYZbmFnJCjRa4sYSUi7h9Azn59Yrgmpda/Lu0vV/6qzJHrseYHiDMPJRBaypZMPN1jtzgPTXFV9te5hQM49T+9NjZ2xT6Q4PINOPjQhOeMAkheVITYxqhEL10WpjRwmm1Kz2ClVGoSXOjgDiTCzTogZ9difIO2IIi12vh+fYYVdNmI3xrno/agrt7ZgybaCbm8AAqVtMoCBgoQlOyXwCSMBTqYGu53QcJSrn4EbnmGu2D2omrqtJl38MLklZ3GeDOcZW9R8iN4y5Gb7X6J6Sd7L1OT+oL3vCWdiXTXJrUSNSKVOEuob1ZM+0jv666g8p9mNy37svc5EZQMnFHp6eZnt53Jy9Tg+0mCAavO0bqAdwESqsFC06eUHX7doVcevznXIGspQRHU4H93oGCUGTVGFfbB4QLKLsV+AP3olXjLVSExNQyh3g1DnLAPgyjFBklA20WW2SWzGwFfDwLOVuIs4QTgacZ+UXAPIfSrC3V5aQq29DV6zXCmQPoexvqiAsRqxsxrg9KEKLAG3E4pR37MmofpudVbaMZnO181wNgsucTmoD7zL9Ff3S7wev7hCKSiJh5kvfeJoIo5K3lIyNerbyW5Y83+ZLFsWTSXx9f/qG7WrLDRkvJO3EJuUIkRfVh8UrB0v9L6CTCL1JLcDsei0zv6VdgqHgrubEYKIABJRJLA5Gq3erCUHO6twjRleoI7+Qk40iydpz/kX+bjRhjUQ4B48MO1+cjZ5LSpvqdE4h5fvnGalg6EH9WzrtWhGXqbFQu1bXiid9IkMFKDPnjtsk9FwUQTJ6UhELDO0U/DJM3ZGTmxOYVS/iFtlnIvjm543IZU0+3H3RctDBLt8+qNCIHjbPsManaZ89Vl0xiLpDJgRBNX4JctpBTE0WcfIWYX4Tx+xLzNEX6IV6WWfvs5WEKNG2WsC6s3+WM6Rx1SsDqSGxWA3RHonfZ3uNJfAI7JRUEyUIXOi1s0Xo2xfln70oYIE7miVXkDo+lwnegJsP+rj5Vlx7sf+K7nGw96Qygwsi9LOS+bKHBXlnd7sS1TZRiNojE7k7K4X4yseo9iIGiHnZhlkBCISKcToIRVvSp2danxk7w01/qLvZEReX6ELhN7JgDDBXe0SNH7UnWMm2GsrQnwsXbT0atiNiz738qy9tlOxOCk7ijKB+iJPn75LklYbE0p+5LgFd62nluHNaVzjul2N8Bk+F2Y3PEaFRdW9NjZbFDL7rM0C75gopO5eHHajMcaqekBhqAR0bT5H/+5cTGAbJ9tbjfo8=",
+  saltB64: "SPGXDw3cTnESR34PQXkhFQ==",
+  ivB64: "QFd8AkMNajkKS75W",
+  cipherB64: "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",
   iterations: 600000,
 };
 const STORAGE_KEY = "hj-networth-key-v1";
@@ -580,6 +729,18 @@ function niceMax(v) {
   const step = steps.find(s => s >= n) || 10;
   return step * mag;
 }
+// 축 눈금이 늘 깔끔한 배수가 되도록: rawMax를 targetTicks개의 "예쁜" 간격으로 나눈다.
+function niceTicks(rawMax, targetTicks) {
+  targetTicks = targetTicks || 4;
+  if (rawMax <= 0) return { max: 100000000, step: 25000000 };
+  const rawStep = rawMax / targetTicks;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const n = rawStep / mag;
+  const niceSteps = [1, 2, 2.5, 5, 10];
+  const stepMul = niceSteps.find(s => s >= n) || 10;
+  const step = stepMul * mag;
+  return { max: step * targetTicks, step };
+}
 const timeOf = (d) => new Date(d + "T00:00:00").getTime();
 
 // ---------------------------------------------------------------------------
@@ -591,12 +752,21 @@ let dates = [];
 let hyunjinSeries = [];
 let haeunSeries = [];
 let household = { net: [], assetsLiab: [] };
+let CASHFLOW_MONTHS = [];
+let CASHFLOW = { hyunjin: null, haeun: null };
+let INVESTMENTS = { hyunjin: [], haeun: [] };
+let GOAL = { netWorthTarget: 0 };
 
 const netState = { hyunjin: true, haeun: true, household: true };
 const debtState = { assets: true, liab: true };
 const debtDefs = [
   { id: "assets", label: "총자산", color: "var(--accent)" },
   { id: "liab", label: "총부채", color: "var(--debt)" },
+];
+const cashflowState = { income: true, expense: true };
+const cashflowDefs = [
+  { id: "income", label: "수입", color: "var(--accent)" },
+  { id: "expense", label: "지출", color: "var(--debt)" },
 ];
 
 function buildSeries(personKey) {
@@ -637,9 +807,17 @@ function applyPayload(payload) {
   hyunjinSeries = buildSeries("hyunjin");
   haeunSeries = buildSeries("haeun");
   household = buildHousehold();
+  CASHFLOW_MONTHS = payload.cashflowMonths || [];
+  CASHFLOW = payload.cashflow || { hyunjin: null, haeun: null };
+  INVESTMENTS = payload.investments || { hyunjin: [], haeun: [] };
+  GOAL = payload.goal || { netWorthTarget: 0 };
 
   document.getElementById("pageTitle").textContent = "우리 가족 자산현황";
   document.getElementById("pageSubtitle").textContent = `${NAMES.hyunjin} · ${NAMES.haeun}  ·  뱅크샐러드 데이터 기준, 매월 업데이트`;
+}
+function formatYM(ym) {
+  const [y, m] = ym.split("-");
+  return `${y.slice(2)}.${m}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -666,7 +844,7 @@ function drawLineChart(svgEl, tooltipEl, defs, state, opts) {
   defs.forEach(d => { if (state[d.id]) d.data.forEach(p => { if (p) allVals.push(opts.getVal(p)); }); });
   allVals.push(0);
   const maxRaw = Math.max(...allVals, 1);
-  const maxV = niceMax(maxRaw * 1.12);
+  const { max: maxV, step: tickStep } = niceTicks(maxRaw * 1.12, 4);
   const minV = 0;
 
   const t0 = timeOf(dates[0]), t1 = timeOf(dates[dates.length - 1]);
@@ -679,7 +857,7 @@ function drawLineChart(svgEl, tooltipEl, defs, state, opts) {
 
   const steps = 4;
   for (let i = 0; i <= steps; i++) {
-    const v = (maxV / steps) * i;
+    const v = tickStep * i;
     const y = yOf(v);
     const line = document.createElementNS(NS, "line");
     line.setAttribute("x1", padL); line.setAttribute("x2", W - padR);
@@ -810,7 +988,7 @@ function drawDebtChart(svgEl, tooltipEl) {
   const validIdx = series.map((p, i) => p ? i : -1).filter(i => i >= 0);
 
   const maxRaw = Math.max(...series.filter(Boolean).map(p => p.assets), 1);
-  const maxV = niceMax(maxRaw * 1.08);
+  const { max: maxV, step: tickStep } = niceTicks(maxRaw * 1.08, 4);
 
   const t0 = timeOf(dates[0]), t1 = timeOf(dates[dates.length - 1]);
   const xOf = (t) => padL + (t1 === t0 ? 0 : (t - t0) / (t1 - t0)) * plotW;
@@ -822,7 +1000,7 @@ function drawDebtChart(svgEl, tooltipEl) {
 
   const steps = 4;
   for (let i = 0; i <= steps; i++) {
-    const v = (maxV / steps) * i;
+    const v = tickStep * i;
     const y = yOf(v);
     const line = document.createElementNS(NS, "line");
     line.setAttribute("x1", padL); line.setAttribute("x2", W - padR);
@@ -993,6 +1171,333 @@ function renderComposition() {
 }
 
 // ---------------------------------------------------------------------------
+// 5.5 순자산 목표 게이지
+// ---------------------------------------------------------------------------
+function renderGoalMeter() {
+  const hh = lastTwoHouseholdSafe();
+  const current = hh ? hh.value : 0;
+  const target = GOAL.netWorthTarget || 0;
+  const pct = target > 0 ? Math.min(100, Math.max(0, (current / target) * 100)) : 0;
+  document.getElementById("goalFill").style.width = pct.toFixed(1) + "%";
+  document.getElementById("goalPct").textContent = pct.toFixed(1) + "%";
+  document.getElementById("goalCurrent").textContent = `현재 ${formatEok(current)}`;
+  document.getElementById("goalTarget").textContent = `목표 ${formatEok(target)}`;
+}
+function lastTwoHouseholdSafe() {
+  const any = household.net.filter(Boolean);
+  return any[any.length - 1] || null;
+}
+
+// ---------------------------------------------------------------------------
+// 5.6 월별 수입 · 지출 + 저축률
+// ---------------------------------------------------------------------------
+function householdCashflowSeries() {
+  if (!CASHFLOW.hyunjin || !CASHFLOW.haeun) return null;
+  const n = CASHFLOW_MONTHS.length;
+  const income = [], expense = [];
+  for (let i = 0; i < n; i++) {
+    income.push((CASHFLOW.hyunjin.income[i] || 0) + (CASHFLOW.haeun.income[i] || 0));
+    expense.push((CASHFLOW.hyunjin.expense[i] || 0) + (CASHFLOW.haeun.expense[i] || 0));
+  }
+  return { income, expense };
+}
+
+function drawCashflowChart(svgEl, tooltipEl) {
+  const cf = householdCashflowSeries();
+  if (!cf) return;
+  const W = 960, H = 300;
+  const padL = 64, padR = 20, padT = 18, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const n = CASHFLOW_MONTHS.length;
+
+  const allVals = [];
+  if (cashflowState.income) allVals.push(...cf.income);
+  if (cashflowState.expense) allVals.push(...cf.expense);
+  const { max: maxV, step: tickStep } = niceTicks(Math.max(...allVals, 1) * 1.08, 4);
+
+  const slot = plotW / n;
+  const xCenter = (i) => padL + slot * (i + 0.5);
+  const yOf = (v) => padT + plotH - (v / maxV) * plotH;
+
+  const NS = "http://www.w3.org/2000/svg";
+  svgEl.innerHTML = "";
+  svgEl.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+  const steps = 4;
+  for (let i = 0; i <= steps; i++) {
+    const v = tickStep * i;
+    const y = yOf(v);
+    const line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", padL); line.setAttribute("x2", W - padR);
+    line.setAttribute("y1", y); line.setAttribute("y2", y);
+    line.setAttribute("class", i === 0 ? "baseline-line" : "grid-line");
+    svgEl.appendChild(line);
+    const label = document.createElementNS(NS, "text");
+    label.setAttribute("x", padL - 10); label.setAttribute("y", y + 4);
+    label.setAttribute("text-anchor", "end"); label.setAttribute("class", "axis-label");
+    label.textContent = v === 0 ? "0" : formatEokShort(v);
+    svgEl.appendChild(label);
+  }
+
+  const barW = Math.max(6, Math.min(16, slot * 0.32));
+  const gap = 3;
+  for (let i = 0; i < n; i++) {
+    const cx = xCenter(i);
+    const label = document.createElementNS(NS, "text");
+    label.setAttribute("x", cx); label.setAttribute("y", H - padB + 20);
+    label.setAttribute("text-anchor", "middle"); label.setAttribute("class", "axis-label");
+    label.textContent = formatYM(CASHFLOW_MONTHS[i]);
+    svgEl.appendChild(label);
+
+    if (cashflowState.income) {
+      const y = yOf(cf.income[i]);
+      const rect = document.createElementNS(NS, "rect");
+      rect.setAttribute("x", cx - gap / 2 - barW); rect.setAttribute("y", y);
+      rect.setAttribute("width", barW); rect.setAttribute("height", (padT + plotH) - y);
+      rect.setAttribute("rx", 3); rect.setAttribute("fill", "var(--accent)");
+      svgEl.appendChild(rect);
+    }
+    if (cashflowState.expense) {
+      const y = yOf(cf.expense[i]);
+      const rect = document.createElementNS(NS, "rect");
+      rect.setAttribute("x", cx + gap / 2); rect.setAttribute("y", y);
+      rect.setAttribute("width", barW); rect.setAttribute("height", (padT + plotH) - y);
+      rect.setAttribute("rx", 3); rect.setAttribute("fill", "var(--debt)");
+      svgEl.appendChild(rect);
+    }
+
+    const zone = document.createElementNS(NS, "rect");
+    zone.setAttribute("x", padL + slot * i); zone.setAttribute("y", padT);
+    zone.setAttribute("width", slot); zone.setAttribute("height", plotH);
+    zone.setAttribute("fill", "transparent"); zone.style.cursor = "pointer";
+    const show = () => {
+      let rows = "";
+      if (cashflowState.income) rows += `<div class="tt-row"><span class="tt-dot" style="background:var(--accent)"></span>수입<span class="tt-val">${formatEok(cf.income[i])}</span></div>`;
+      if (cashflowState.expense) rows += `<div class="tt-row"><span class="tt-dot" style="background:var(--debt)"></span>지출<span class="tt-val">${formatEok(cf.expense[i])}</span></div>`;
+      const savingsPct = cf.income[i] > 0 ? ((cf.income[i] - cf.expense[i]) / cf.income[i] * 100) : 0;
+      tooltipEl.innerHTML = `<div class="tt-date">${formatYM(CASHFLOW_MONTHS[i])}</div>${rows}<div class="tt-note">저축률 ${savingsPct.toFixed(0)}%</div>`;
+      const wrapRect = svgEl.parentElement.getBoundingClientRect();
+      tooltipEl.style.left = ((cx / W) * wrapRect.width) + "px";
+      tooltipEl.style.top = (((padT + 6) / H) * wrapRect.height) + "px";
+      tooltipEl.style.opacity = 1;
+    };
+    zone.addEventListener("mouseenter", show);
+    zone.addEventListener("mousemove", show);
+    zone.addEventListener("mouseleave", () => { tooltipEl.style.opacity = 0; });
+    zone.addEventListener("touchstart", show, { passive: true });
+    svgEl.appendChild(zone);
+  }
+}
+
+function drawSavingsRateChart(svgEl, tooltipEl) {
+  const cf = householdCashflowSeries();
+  if (!cf) return;
+  const n = CASHFLOW_MONTHS.length;
+  const rates = cf.income.map((inc, i) => inc > 0 ? ((inc - cf.expense[i]) / inc) * 100 : 0);
+
+  const W = 960, H = 110;
+  const padL = 64, padR = 20, padT = 10, padB = 14;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxAbs = Math.max(...rates.map(r => Math.abs(r)), 20);
+  const minV = Math.min(0, ...rates) < 0 ? -maxAbs : 0;
+  const maxV = maxAbs;
+
+  const slot = plotW / n;
+  const xCenter = (i) => padL + slot * (i + 0.5);
+  const yOf = (v) => padT + plotH - ((v - minV) / (maxV - minV)) * plotH;
+
+  const NS = "http://www.w3.org/2000/svg";
+  svgEl.innerHTML = "";
+  svgEl.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+  const zeroY = yOf(0);
+  const baseline = document.createElementNS(NS, "line");
+  baseline.setAttribute("x1", padL); baseline.setAttribute("x2", W - padR);
+  baseline.setAttribute("y1", zeroY); baseline.setAttribute("y2", zeroY);
+  baseline.setAttribute("class", "baseline-line");
+  svgEl.appendChild(baseline);
+
+  const pts = rates.map((r, i) => ({ x: xCenter(i), y: yOf(r) }));
+  const path = document.createElementNS(NS, "path");
+  const d = pts.map((p, idx) => (idx === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+  path.setAttribute("d", d);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "var(--accent)");
+  path.setAttribute("stroke-width", 2);
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("stroke-linejoin", "round");
+  svgEl.appendChild(path);
+
+  pts.forEach((p, i) => {
+    const dot = document.createElementNS(NS, "circle");
+    dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
+    dot.setAttribute("r", i === pts.length - 1 ? 4 : 2.5);
+    dot.setAttribute("fill", "var(--accent)");
+    svgEl.appendChild(dot);
+
+    const zone = document.createElementNS(NS, "rect");
+    zone.setAttribute("x", padL + slot * i); zone.setAttribute("y", 0);
+    zone.setAttribute("width", slot); zone.setAttribute("height", H);
+    zone.setAttribute("fill", "transparent"); zone.style.cursor = "pointer";
+    const show = () => {
+      tooltipEl.innerHTML = `<div class="tt-date">${formatYM(CASHFLOW_MONTHS[i])}</div><div class="tt-row">저축률<span class="tt-val">${rates[i].toFixed(0)}%</span></div>`;
+      const wrapRect = svgEl.parentElement.getBoundingClientRect();
+      tooltipEl.style.left = ((p.x / W) * wrapRect.width) + "px";
+      tooltipEl.style.top = "0px";
+      tooltipEl.style.opacity = 1;
+    };
+    zone.addEventListener("mouseenter", show);
+    zone.addEventListener("mousemove", show);
+    zone.addEventListener("mouseleave", () => { tooltipEl.style.opacity = 0; });
+    zone.addEventListener("touchstart", show, { passive: true });
+    svgEl.appendChild(zone);
+  });
+}
+
+function renderCashflow() {
+  if (!householdCashflowSeries()) return;
+  renderLegend(document.getElementById("legendCashflow"), cashflowDefs, cashflowState, renderCashflow, "square");
+  drawCashflowChart(document.getElementById("chartCashflow"), document.getElementById("tooltipCashflow"));
+  drawSavingsRateChart(document.getElementById("chartSavings"), document.getElementById("tooltipSavings"));
+}
+
+// ---------------------------------------------------------------------------
+// 5.7 지출 카테고리 트렌드 — 인물별 상위 5개 스파크라인
+// ---------------------------------------------------------------------------
+function drawSparkline(svgEl, values, color) {
+  const W = 240, H = 28;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = (max - min) || 1;
+  const n = values.length;
+  const xOf = (i) => (i / (n - 1)) * W;
+  const yOf = (v) => H - ((v - min) / range) * (H - 4) - 2;
+
+  const NS = "http://www.w3.org/2000/svg";
+  svgEl.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svgEl.innerHTML = "";
+
+  const pts = values.map((v, i) => ({ x: xOf(i), y: yOf(v) }));
+  const areaD = "M" + pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L") +
+    ` L${W},${H} L0,${H} Z`;
+  const area = document.createElementNS(NS, "path");
+  area.setAttribute("d", areaD);
+  area.setAttribute("fill", color);
+  area.setAttribute("opacity", "0.12");
+  svgEl.appendChild(area);
+
+  const lineD = "M" + pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" L");
+  const line = document.createElementNS(NS, "path");
+  line.setAttribute("d", lineD);
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", color);
+  line.setAttribute("stroke-width", 1.75);
+  line.setAttribute("stroke-linecap", "round");
+  line.setAttribute("stroke-linejoin", "round");
+  svgEl.appendChild(line);
+
+  const last = pts[pts.length - 1];
+  const dot = document.createElementNS(NS, "circle");
+  dot.setAttribute("cx", last.x); dot.setAttribute("cy", last.y);
+  dot.setAttribute("r", 2.75);
+  dot.setAttribute("fill", color);
+  svgEl.appendChild(dot);
+}
+
+function renderExpenseSparklines() {
+  const grid = document.getElementById("sparkGrid");
+  grid.innerHTML = "";
+  const people = [
+    { key: "hyunjin", label: NAMES.hyunjin, color: "var(--hyunjin)" },
+    { key: "haeun", label: NAMES.haeun, color: "var(--haeun)" },
+  ];
+  people.forEach(person => {
+    const data = CASHFLOW[person.key];
+    const col = document.createElement("div");
+    col.className = "spark-col";
+    const head = document.createElement("div");
+    head.className = "spark-person";
+    head.innerHTML = `<span class="dot" style="background:${person.color}"></span>${person.label}`;
+    col.appendChild(head);
+    if (!data || !data.topExpense || !data.topExpense.length) {
+      col.innerHTML += `<div class="footnote">데이터 없음</div>`;
+      grid.appendChild(col);
+      return;
+    }
+    data.topExpense.forEach(cat => {
+      const row = document.createElement("div");
+      row.className = "spark-row";
+      const svgWrap = document.createElement("div");
+      svgWrap.className = "spark-svg-wrap";
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svgWrap.appendChild(svg);
+      row.innerHTML = `<span class="spark-label">${cat.label}</span>`;
+      row.appendChild(svgWrap);
+      const totalEl = document.createElement("span");
+      totalEl.className = "spark-total";
+      totalEl.textContent = formatEok(cat.total);
+      row.appendChild(totalEl);
+      col.appendChild(row);
+      requestAnimationFrame(() => drawSparkline(svg, cat.series, person.color.startsWith("var") ? getCssVarColor(person.color) : person.color));
+    });
+    grid.appendChild(col);
+  });
+}
+function getCssVarColor(varExpr) {
+  const name = varExpr.slice(4, -1);
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888";
+}
+
+// ---------------------------------------------------------------------------
+// 5.8 투자 종목 테이블
+// ---------------------------------------------------------------------------
+function retChip(pct) {
+  if (pct === null || pct === undefined) return `<span class="ret-chip zero">—</span>`;
+  const cls = Math.abs(pct) < 0.05 ? "zero" : (pct > 0 ? "pos" : "neg");
+  const arrow = Math.abs(pct) < 0.05 ? "" : (pct > 0 ? "▲ " : "▼ ");
+  return `<span class="ret-chip ${cls}">${arrow}${Math.abs(pct).toFixed(1)}%</span>`;
+}
+function renderInvestmentTables() {
+  const wrap = document.getElementById("investTables");
+  wrap.innerHTML = "";
+  const people = [
+    { key: "hyunjin", label: NAMES.hyunjin, color: "var(--hyunjin)" },
+    { key: "haeun", label: NAMES.haeun, color: "var(--haeun)" },
+  ];
+  let latestLabel = "";
+  const latestHyunjin = [...hyunjinSeries].reverse().find(Boolean);
+  if (latestHyunjin) latestLabel = formatFull(latestHyunjin.date);
+  document.getElementById("investSub").textContent = `최신 데이터 기준(${latestLabel}) 보유 종목과 평가 수익률입니다.`;
+
+  people.forEach(person => {
+    const holdings = INVESTMENTS[person.key] || [];
+    const box = document.createElement("div");
+    box.className = "invest-table-wrap";
+    const head = document.createElement("div");
+    head.className = "invest-person";
+    head.innerHTML = `<span class="dot" style="background:${person.color}"></span>${person.label} <span style="color:var(--ink-muted); font-weight:500;">· 종목 ${holdings.length}개</span>`;
+    box.appendChild(head);
+    const scroll = document.createElement("div");
+    scroll.className = "invest-scroll";
+    const rows = holdings.map(h => `
+      <tr>
+        <td>${h.name}</td>
+        <td class="num">${formatEok(h.value)}</td>
+        <td class="num">${retChip(h.return_pct)}</td>
+      </tr>
+    `).join("");
+    scroll.innerHTML = `
+      <table class="invest-table">
+        <thead><tr><th>종목명</th><th class="num">평가금액</th><th class="num">수익률</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="3" style="color:var(--ink-muted);">데이터 없음</td></tr>'}</tbody>
+      </table>
+    `;
+    box.appendChild(scroll);
+    wrap.appendChild(box);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // 6. KPI 카드
 // ---------------------------------------------------------------------------
 function lastTwo(series) {
@@ -1051,9 +1556,13 @@ function renderKPIs() {
 // ---------------------------------------------------------------------------
 function renderAll() {
   renderKPIs();
+  renderGoalMeter();
   renderNetChart();
   renderDebtChart();
   renderComposition();
+  renderCashflow();
+  renderExpenseSparklines();
+  renderInvestmentTables();
 
   document.getElementById("footnoteNet").innerHTML =
     "옅은 원은 상대방의 실제 데이터가 없어 직전 값을 이어받은 추정 지점이에요. 두 분이 같은 날 함께 내보내기 하면 합산 순자산이 더 정확해져요.";
